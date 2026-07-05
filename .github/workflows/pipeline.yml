@@ -1,0 +1,38 @@
+#---------------------------
+# CI/CD pipeline
+# deploying to DockerHub
+#---------------------------
+on:
+    branches:
+        master
+
+jobs:
+    build:
+        runs-on: ubuntu-22.04
+        steps:
+        - name : Start of the building
+          run: echo "Building started"
+        - name : Building
+          run: docker build -t "rsa_encoder_final" .
+    test:
+        needs: [build]
+        runs-on: ubuntu-22.04
+        steps:
+        - name : "Start of the testing"
+          run: echo "Testing started"
+        - name : "launching tests"
+          run: ...
+          
+          
+    deploy :
+        needs: [test]
+        runs-on: ubuntu-22.04
+        steps:
+         - name : "Start of the deploying to docker hub"
+          run: echo "Deploy to  dockerHub started"
+        - name : "pushing to DockerHub"
+          run: docker push swetodd/rsa_necoder_final:latest
+          run: echo "successfully deployed"
+
+        
+    
