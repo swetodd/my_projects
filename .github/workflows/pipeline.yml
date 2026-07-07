@@ -5,7 +5,7 @@
 on:
     push:
         branches:
-            master
+            main
 
 jobs:
     build:
@@ -35,7 +35,7 @@ jobs:
         - name: "test completed"
           run: echo "tests passed"
 
-      deploy:
+    deploy:
         needs: [test]
         runs-on: ubuntu-22.04
         steps:
@@ -49,11 +49,11 @@ jobs:
            with:
              username: ${{ secrets.DOCKER_USERNAME }}
              password: ${{ secrets.DOCKER_PASSWORD }}
+         - name: Build Docker image
+           run: docker build -t swetodd/rsa_encoder_final:latest .
          - name: "pushing to DockerHub"
-           run: docker push swetodd/rsa_necoder_final:latest
-
-         - name: Push to DockerHub
-           run: docker push swetodd/rsa_encoder_final:latest         
+           run: docker push swetodd/rsa_encoder_final:latest
+   
          - name: Successfully deployed
            run: echo "Successfully deployed"
 
