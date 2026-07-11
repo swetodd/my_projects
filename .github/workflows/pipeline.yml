@@ -3,59 +3,64 @@
 # deploying to DockerHub
 #---------------------------
 on:
-    push:
-        branches:
-            master
+  push:
+    branches:
+      - main
 
 jobs:
-    build:
-        runs-on: ubuntu-22.04
-        steps:
-        - name: Checkout code 
-          uses: actions/checkout@v4
-        - name: Start of the building
-          run: echo "Building started"
-        - name: Building
-          run: docker build -t "rsa_encoder_final" .
-    test:
-        needs: [build]
-        runs-on: ubuntu-22.04
-        steps:
-        - name: Checkout code 
-          uses: actions/checkout@v4
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Start of the building
+        run: echo "Building started"
+      - name: Build Docker image
+        run: docker build -t swetodd/rsa_encoder_final:latest ./RSA_encoder
 
-        - name: "Start of the testing"
-          run: echo "Testing started"
-        - name: "Compile tests"
-          run: g++ -o test_rsa test_rsa.cpp
+  test:
+    needs: [build]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-        - name: "launching tests"
-          run: ./test_rsa
+      - name: Start of the testing
+        run: echo "Testing started"
 
-        - name: "test completed"
-          run: echo "tests passed"
+      - name: Compile tests
+        run: |
+          cd RSA_encoder
+          g++ -std=c++17 -o test_rsa test_rsa.cpp BigInteger.cpp RSA.cpp
 
-      deploy:
-        needs: [test]
-        runs-on: ubuntu-22.04
-        steps:
-         - name: "Start of the deploying to docker hub"
-           run: echo "Deploy to  dockerHub started"
+      - name: Run tests
+        run: |
+          cd RSA_encoder
+          ./test_rsa
 
-         - name: Checkout code
-           uses: actions/checkout@v4
-         - name: Log in to DockerHub
-           uses: docker/login-action@v3
-           with:
-             username: ${{ secrets.DOCKER_USERNAME }}
-             password: ${{ secrets.DOCKER_PASSWORD }}
-         - name: "pushing to DockerHub"
-           run: docker push swetodd/rsa_necoder_final:latest
+      - name: Test completed
+        run: echo "Tests passed"
 
-         - name: Push to DockerHub
-           run: docker push swetodd/rsa_encoder_final:latest         
-         - name: Successfully deployed
-           run: echo "Successfully deployed"
+  deploy:
+    needs: [test]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Start of the deploying to DockerHub
+        run: echo "Deploy to DockerHub started"
 
-         - name: Successfully done
-           run: echo "Successfully done"
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push to DockerHub
+        run: |
+          cd RSA_encoder
+          docker build -t swetodd/rsa_encoder_final:latest .
+          docker push swetodd/rsa_encoder_final:latest
+
+      - name: Successfully deployed
+        run: echo "Successfully deployed"
